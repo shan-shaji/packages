@@ -108,7 +108,8 @@ class UrlLauncherPlugin extends UrlLauncherPlatform {
       }
       return false;
     }
-    return openNewWindow(url, webOnlyWindowName: windowName) != null;
+    openNewWindow(url, webOnlyWindowName: windowName);
+    return true;
   }
 
   @override
