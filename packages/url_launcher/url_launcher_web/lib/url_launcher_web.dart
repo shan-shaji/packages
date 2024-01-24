@@ -68,14 +68,6 @@ class UrlLauncherPlugin extends UrlLauncherPlatform {
   @visibleForTesting
   html.Window? openNewWindow(String url, {String? webOnlyWindowName}) {
     final String? scheme = _getUrlScheme(url);
-    // Actively disallow opening some schemes, like javascript.
-    // See https://github.com/flutter/flutter/issues/136657
-    if (_isDisallowedScheme(scheme)) {
-      if (kDebugMode) {
-        print('Disallowed URL with scheme: $scheme');
-      }
-      return null;
-    }
     // Some schemes need to be opened on the _top window context on Safari.
     // See https://github.com/flutter/flutter/issues/51461
     final String target = webOnlyWindowName ?? ((_isSafari && _isSafariTargetTopScheme(scheme)) ? '_top' : '');
@@ -100,13 +92,23 @@ class UrlLauncherPlugin extends UrlLauncherPlatform {
     Map<String, String> headers = const <String, String>{},
     String? webOnlyWindowName,
   }) async {
-    return Future<bool>.value(launchUrl(url, LaunchOptions(webOnlyWindowName: webOnlyWindowName)));
+    return launchUrl(url, LaunchOptions(webOnlyWindowName: webOnlyWindowName));
   }
 
   @override
   Future<bool> launchUrl(String url, LaunchOptions options) async {
     final String? windowName = options.webOnlyWindowName;
-    return Future<bool>.value(openNewWindow(url, webOnlyWindowName: windowName) != null);
+    final String? scheme = _getUrlScheme(url);
+
+    // Actively disallow opening some schemes, like javascript.
+    // See https://github.com/flutter/flutter/issues/136657
+    if (_isDisallowedScheme(scheme)) {
+      if (kDebugMode) {
+        print('Disallowed URL with scheme: $scheme');
+      }
+      return false;
+    }
+    return openNewWindow(url, webOnlyWindowName: windowName) != null;
   }
 
   @override
