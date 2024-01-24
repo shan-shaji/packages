@@ -18,28 +18,27 @@ const Set<String> _safariTargetTopSchemes = <String>{
   'tel',
   'sms',
 };
+
 String? _getUrlScheme(String url) => Uri.tryParse(url)?.scheme;
 
-bool _isSafariTargetTopScheme(String? scheme) =>
-    _safariTargetTopSchemes.contains(scheme);
+bool _isSafariTargetTopScheme(String? scheme) => _safariTargetTopSchemes.contains(scheme);
 
 // The set of schemes that are explicitly disallowed by the plugin.
 const Set<String> _disallowedSchemes = <String>{
   'javascript',
 };
+
 bool _isDisallowedScheme(String? scheme) => _disallowedSchemes.contains(scheme);
 
 bool _navigatorIsSafari(html.Navigator navigator) =>
-    navigator.userAgent.contains('Safari') &&
-    !navigator.userAgent.contains('Chrome');
+    navigator.userAgent.contains('Safari') && !navigator.userAgent.contains('Chrome');
 
 /// The web implementation of [UrlLauncherPlatform].
 ///
 /// This class implements the `package:url_launcher` functionality for the web.
 class UrlLauncherPlugin extends UrlLauncherPlatform {
   /// A constructor that allows tests to override the window object used by the plugin.
-  UrlLauncherPlugin({@visibleForTesting html.Window? debugWindow})
-      : _window = debugWindow ?? html.window {
+  UrlLauncherPlugin({@visibleForTesting html.Window? debugWindow}) : _window = debugWindow ?? html.window {
     _isSafari = _navigatorIsSafari(_window.navigator);
   }
 
@@ -55,8 +54,7 @@ class UrlLauncherPlugin extends UrlLauncherPlatform {
   /// Registers this class as the default instance of [UrlLauncherPlatform].
   static void registerWith(Registrar registrar) {
     UrlLauncherPlatform.instance = UrlLauncherPlugin();
-    ui_web.platformViewRegistry
-        .registerViewFactory(linkViewType, linkViewFactory, isVisible: false);
+    ui_web.platformViewRegistry.registerViewFactory(linkViewType, linkViewFactory, isVisible: false);
   }
 
   @override
@@ -80,8 +78,7 @@ class UrlLauncherPlugin extends UrlLauncherPlatform {
     }
     // Some schemes need to be opened on the _top window context on Safari.
     // See https://github.com/flutter/flutter/issues/51461
-    final String target = webOnlyWindowName ??
-        ((_isSafari && _isSafariTargetTopScheme(scheme)) ? '_top' : '');
+    final String target = webOnlyWindowName ?? ((_isSafari && _isSafariTargetTopScheme(scheme)) ? '_top' : '');
 
     // ignore: unsafe_html
     return _window.open(url, target, 'noopener,noreferrer');
@@ -103,13 +100,13 @@ class UrlLauncherPlugin extends UrlLauncherPlatform {
     Map<String, String> headers = const <String, String>{},
     String? webOnlyWindowName,
   }) async {
-    return launchUrl(url, LaunchOptions(webOnlyWindowName: webOnlyWindowName));
+    return Future<bool>.value(launchUrl(url, LaunchOptions(webOnlyWindowName: webOnlyWindowName)));
   }
 
   @override
   Future<bool> launchUrl(String url, LaunchOptions options) async {
     final String? windowName = options.webOnlyWindowName;
-    return openNewWindow(url, webOnlyWindowName: windowName) != null;
+    return Future<bool>.value(openNewWindow(url, webOnlyWindowName: windowName) != null);
   }
 
   @override
